@@ -5,6 +5,7 @@ import os
 import requests
 import html
 from flask import Flask
+import threading
 
 # --- КЕЕP ALIVE СЕРВЕРІ (RENDER ҮШІН) ---
 app = Flask('')
