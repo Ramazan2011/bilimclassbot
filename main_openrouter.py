@@ -4,7 +4,22 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 import os
 import requests
 import html
+from flask import Flask
 
+# --- КЕЕP ALIVE СЕРВЕРІ (RENDER ҮШІН) ---
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Бот жұмыс істеп тұр! (Bilim AI)"
+
+def run():
+    # Render әдетте 8080 портын қолданады
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = threading.Thread(target=run)
+    t.start()
 # Enable logging
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -287,6 +302,7 @@ async def ai_response(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
 def main() -> None:
     """Start the bot."""
+    keep_alive()
     # Create the Application and pass it your bot's token.
     application = Application.builder().token("8332495617:AAEKHCFUA06aTyV9OOrANlTZI6HFyf6qnMM").build()
 
