@@ -53,11 +53,12 @@ STRINGS = {
 }
 
 def get_main_menu_keyboard(lang: str):
-    """Return the persistent main menu keyboard localized."""
     s = STRINGS.get(lang, STRINGS['kz'])
+    # Added a third row for the Pomodoro tool
     keyboard = [
         [KeyboardButton(s['schedule_btn']), KeyboardButton(s['homework_btn'])],
-        [KeyboardButton(s['help_btn']), KeyboardButton(s['support_btn'])]
+        [KeyboardButton(s['help_btn']), KeyboardButton(s['support_btn'])],
+        [KeyboardButton("⏳ Pomodoro")] 
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
@@ -281,23 +282,57 @@ async def ai_response(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         await update.message.reply_text(homework_text, reply_markup=get_main_menu_keyboard(lang))
     elif user_message in ["🆘 Көмек 📕", "🆘 Помощь 📕"]:
         await help_command(update, context)
+    elif user_message == "⏳ Pomodoro":
+    	await start_pomodoro(update, context)
+    	return
     else:
         ai_reply = get_ai_response(user_message, lang)
         await update.message.reply_text(ai_reply, reply_markup=get_main_menu_keyboard(lang))
 
+async def pomodoro_callback(context: ContextTypes.DEFAULT_TYPE) -> None:
+    """This function runs when the timer finishes."""
+    job = context.job
+    # job.data is the chat_id we passed earlier
+    await context.bot.send_message(
+        chat_id=job.data, 
+        text="🔔 <b>Время вышло!</b> Пора сделать перерыв (5 минут). Отдохните от экрана! ☕️",
+        parse_mode='HTML'
+    )
+
+async def start_pomodoro(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Command /pomodoro starts a 25-minute timer."""
+    chat_id = update.effective_message.chat_id
+    lang = context.user_data.get('lang', 'ru')
+    
+    text = (
+        "⏳ <b>Pomodoro запущен!</b>\n\n"
+        "Следующие 25 минут — время глубокой концентрации. "
+        "Я напишу вам, когда придет время отдыха."
+    ) if lang == 'ru' else (
+        "⏳ <b>Pomodoro басталды!</b>\n\n"
+        "Келесі 25 минут — терең шоғырлану уақыты. "
+        "Үзіліс уақыты келгенде мен сізге жазамын."
+    )
+
+    # Schedule the job (25 minutes = 1500 seconds)
+    context.job_queue.run_once(pomodoro_callback, 1500, data=chat_id, name=str(chat_id))
+    
+    await update.message.reply_text(text, parse_mode='HTML')
+
+
+
 def main() -> None:
-    """Start the bot."""
-    # Create the Application and pass it your bot's token.
+    # Adding job_queue to the builder
     application = Application.builder().token("8332495617:AAEKHCFUA06aTyV9OOrANlTZI6HFyf6qnMM").build()
 
-    # on different commands - answer in Telegram
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
+    
+    # Add the new Pomodoro command
+    application.add_handler(CommandHandler("pomodoro", start_pomodoro))
 
-    # on non command i.e message - echo the message on Telegram
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, ai_response))
 
-    # Run the bot until the user presses Ctrl-C
     application.run_polling()
 
 if __name__ == "__main__":
