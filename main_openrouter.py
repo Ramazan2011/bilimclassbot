@@ -111,7 +111,7 @@ def read_data_file(filename: str, default_text: str = "") -> str:
 
 def get_ai_response(message: str, lang: str) -> str:
     """Get a response from the OpenRouter AI API with file context."""
-    api_key = "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"
+    api_key = "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"
     url = "https://openrouter.ai/api/v1/chat/completions"
     
     # Read context from files
