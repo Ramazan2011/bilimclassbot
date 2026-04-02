@@ -1,6 +1,7 @@
 import logging
 from telegram import Update, ForceReply, ReplyKeyboardRemove
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+
 # Enable logging
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -289,7 +290,6 @@ async def ai_response(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 def main() -> None:
     """Start the bot."""
     # Create the Application and pass it your bot's token.
-   
     application = Application.builder().token("8332495617:AAEKHCFUA06aTyV9OOrANlTZI6HFyf6qnMM").build()
 
     # on different commands - answer in Telegram
